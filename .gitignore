@@ -1,0 +1,50 @@
+# macOS
+.DS_Store
+**/.DS_Store
+
+# IDE
+.idea/
+.vscode/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# Environment and secrets
+.env
+.env.*
+!.env.example
+
+# Logs
+*.log
+logs/
+
+# Build and packaging
+build/
+dist/
+*.egg-info/
+
+# Local storage and uploads
+storage/
+uploads/
+tmp/
+temp/
+
+# Database local files
+*.sqlite
+*.sqlite3
+
+# Tooling
+.cache/

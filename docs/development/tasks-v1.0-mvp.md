@@ -86,16 +86,16 @@
 
 ### 4.5 M5 图片上传
 
-- [ ] 实现 `POST /api/v1/uploads/images`。
-- [ ] 支持 `multipart/form-data` 上传。
-- [ ] 校验图片格式，仅允许 JPG、PNG。
-- [ ] 校验图片大小，最大 10MB。
-- [ ] 读取图片宽高和文件大小。
-- [ ] 生成图片 SHA256。
-- [ ] 存储图片到本地开发目录或对象存储。
-- [ ] 返回 `UploadImageResult`。
-- [ ] 上传失败时返回 `UPLOAD_FAILED`。
-- [ ] 测试覆盖格式错误、大小超限、正常上传。
+- [x] 实现 `POST /api/v1/uploads/images`。
+- [x] 支持 `multipart/form-data` 上传。
+- [x] 校验图片格式，仅允许 JPG、PNG。
+- [x] 校验图片大小，最大 10MB。
+- [x] 读取图片宽高和文件大小。
+- [x] 生成图片 SHA256。
+- [x] 存储图片到本地开发目录或对象存储。
+- [x] 返回 `UploadImageResult`。
+- [x] 上传失败时返回 `UPLOAD_FAILED`。
+- [x] 测试覆盖格式错误、大小超限、正常上传。
 
 ### 4.6 M6 AI 分析提交
 

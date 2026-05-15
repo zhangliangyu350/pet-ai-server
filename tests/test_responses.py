@@ -11,6 +11,16 @@ def test_success_response_matches_contract():
     }
 
 
+def test_success_response_preserves_null_data():
+    response = success_response(data=None)
+
+    assert response == {
+        "success": True,
+        "data": None,
+        "message": "",
+    }
+
+
 def test_error_response_matches_contract():
     response = error_response(code="SERVER_ERROR", message="服务异常，请稍后再试")
 
@@ -20,4 +30,3 @@ def test_error_response_matches_contract():
         "message": "服务异常，请稍后再试",
         "code": "SERVER_ERROR",
     }
-

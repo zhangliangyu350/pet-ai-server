@@ -4,7 +4,7 @@ from typing import Any, Dict, Optional
 def success_response(data: Any = None, message: str = "") -> Dict[str, Any]:
     return {
         "success": True,
-        "data": {} if data is None else data,
+        "data": data,
         "message": message,
     }
 
@@ -20,4 +20,3 @@ def error_response(
         "message": message,
         "code": code,
     }
-

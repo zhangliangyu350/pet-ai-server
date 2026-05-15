@@ -33,3 +33,15 @@ def get_current_user(
         raise BusinessError(ErrorCode.auth_required, status_code=401)
     return user
 
+
+def get_optional_user(
+    authorization: str = Header(default=None, alias="Authorization"),
+    db: Session = Depends(get_db),
+) -> User:
+    if not authorization:
+        return None
+    return get_current_user(authorization=authorization, db=db)
+
+
+def get_guest_id(x_guest_id: str = Header(default=None, alias="X-Guest-Id")) -> str:
+    return x_guest_id

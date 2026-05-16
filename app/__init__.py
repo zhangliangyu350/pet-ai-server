@@ -1,2 +1,2 @@
-"""Pet AI backend application package."""
+"""AI 宠物健康分析后端应用包。"""
 

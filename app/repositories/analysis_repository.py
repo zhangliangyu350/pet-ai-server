@@ -8,15 +8,15 @@ from app.models.analysis import Analysis
 
 class AnalysisRepository:
     def __init__(self, db: Session) -> None:
-        """Create an analysis repository bound to a database session."""
+        """创建绑定到数据库会话的分析仓储。"""
         self.db = db
 
     def get_by_id(self, analysis_id: str) -> Optional[Analysis]:
-        """Return an analysis by primary key."""
+        """按主键返回分析记录。"""
         return self.db.get(Analysis, analysis_id)
 
     def get_latest_by_sha256(self, image_sha256: str) -> Optional[Analysis]:
-        """Return the latest analysis result for a repeated image fingerprint."""
+        """按重复图片指纹返回最新分析结果。"""
         statement = (
             select(Analysis)
             .where(Analysis.image_sha256 == image_sha256)
@@ -30,7 +30,7 @@ class AnalysisRepository:
         user_id: str = None,
         guest_id: str = None,
     ) -> Optional[Analysis]:
-        """Return the most recent analysis for either a user or guest identity."""
+        """返回用户或游客身份下最近一次分析。"""
         statement = select(Analysis).order_by(desc(Analysis.created_at)).limit(1)
         if user_id:
             statement = statement.where(Analysis.user_id == user_id)
@@ -41,7 +41,7 @@ class AnalysisRepository:
         return self.db.execute(statement).scalar_one_or_none()
 
     def create(self, analysis: Analysis) -> Analysis:
-        """Persist a new analysis in the current transaction."""
+        """在当前事务中持久化新的分析记录。"""
         self.db.add(analysis)
         self.db.flush()
         return analysis

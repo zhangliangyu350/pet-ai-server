@@ -7,7 +7,7 @@ from app.core.logging import configure_logging
 
 
 def create_app() -> FastAPI:
-    """Build and configure the FastAPI application instance."""
+    """创建并配置 FastAPI 应用实例。"""
     settings = get_settings()
     configure_logging(settings.app_env)
 

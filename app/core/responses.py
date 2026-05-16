@@ -2,7 +2,7 @@ from typing import Any, Dict, Optional
 
 
 def success_response(data: Any = None, message: str = "") -> Dict[str, Any]:
-    """Wrap successful API data in the frontend response contract."""
+    """按前端响应契约包装成功 API 数据。"""
     return {
         "success": True,
         "data": data,
@@ -15,7 +15,7 @@ def error_response(
     message: str,
     data: Optional[Any] = None,
 ) -> Dict[str, Any]:
-    """Wrap API errors in the frontend response contract."""
+    """按前端响应契约包装 API 错误。"""
     return {
         "success": False,
         "data": data,

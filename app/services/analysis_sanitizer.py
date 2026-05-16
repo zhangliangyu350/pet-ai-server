@@ -11,7 +11,7 @@ FORBIDDEN_MEDICAL_TERMS = ("诊断", "治疗", "处方")
 
 
 def sanitize_ai_result(raw_result: dict) -> CleanAnalysisResult:
-    """Validate and normalize raw AI output into the public analysis contract."""
+    """校验并规范化 AI 原始输出，转换为公开分析契约。"""
     try:
         score = int(raw_result.get("score"))
         risk_level = str(raw_result.get("riskLevel") or raw_result.get("risk_level") or "").strip()
@@ -44,7 +44,7 @@ def sanitize_ai_result(raw_result: dict) -> CleanAnalysisResult:
 
 
 def _sanitize_text(text: str) -> str:
-    """Remove high-risk medical wording from text returned to users."""
+    """移除返回给用户文案中的高风险医疗表述。"""
     clean_text = text.strip()
     for term in FORBIDDEN_MEDICAL_TERMS:
         clean_text = clean_text.replace(term, "健康参考")

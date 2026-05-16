@@ -21,7 +21,7 @@ class AnalysisService:
         redis_client,
         ai_client: DeepSeekAIClient = None,
     ) -> None:
-        """Create an analysis workflow service with cache, quota, and AI dependencies."""
+        """创建包含缓存、配额和 AI 依赖的分析流程服务。"""
         self.db = db
         self.redis = redis_client
         self.ai_client = ai_client or DeepSeekAIClient()
@@ -35,7 +35,7 @@ class AnalysisService:
         user_id: str = None,
         guest_id: str = None,
     ) -> AnalysisResult:
-        """Run the analysis flow: quota, cache lookup, AI call, persistence, and response."""
+        """执行分析流程：配额检查、缓存查询、AI 调用、持久化和响应转换。"""
         identity, is_guest = self._resolve_identity(user_id=user_id, guest_id=guest_id)
         self.rate_limit_service.check_and_consume(identity=identity, is_guest=is_guest)
 
@@ -92,7 +92,7 @@ class AnalysisService:
 
     @staticmethod
     def _resolve_identity(user_id: str = None, guest_id: str = None) -> tuple[str, bool]:
-        """Resolve the current user or guest into a rate-limit identity."""
+        """将当前登录用户或游客解析为限流身份标识。"""
         if user_id:
             return user_identity(user_id), False
         if guest_id:
@@ -101,7 +101,7 @@ class AnalysisService:
 
     @staticmethod
     def _to_result(analysis: Analysis) -> AnalysisResult:
-        """Convert an analysis model into the public analysis response shape."""
+        """将分析模型转换为公开分析响应结构。"""
         created_at = analysis.created_at or datetime.utcnow()
         return AnalysisResult(
             id=analysis.id,
@@ -121,5 +121,5 @@ class AnalysisService:
 
     @staticmethod
     def _new_analysis_id() -> str:
-        """Generate an opaque analysis identifier."""
+        """生成不暴露业务含义的分析 ID。"""
         return f"analysis_{uuid.uuid4().hex}"

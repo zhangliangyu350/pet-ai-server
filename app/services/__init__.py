@@ -1,4 +1,4 @@
-"""Business service package."""
+"""业务服务包。"""
 
 from app.services.analysis_cache_service import AnalysisCacheService
 from app.services.analysis_service import AnalysisService

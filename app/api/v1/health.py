@@ -8,7 +8,7 @@ router = APIRouter()
 
 @router.get("/health")
 def health_check():
-    """Return service liveness and environment metadata."""
+    """返回服务存活状态和环境元数据。"""
     settings = get_settings()
     return success_response(
         data={

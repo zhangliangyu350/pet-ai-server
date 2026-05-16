@@ -1,4 +1,4 @@
-"""Repository package for database access."""
+"""数据库访问仓储包。"""
 
 from app.repositories.analysis_repository import AnalysisRepository
 from app.repositories.image_repository import ImageRepository

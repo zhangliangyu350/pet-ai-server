@@ -1,2 +1,2 @@
-"""Pydantic schema package."""
+"""Pydantic 数据结构包。"""
 

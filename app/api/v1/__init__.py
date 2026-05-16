@@ -1,2 +1,2 @@
-"""Versioned API routes."""
+"""版本化 API 路由包。"""
 

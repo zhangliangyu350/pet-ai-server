@@ -7,7 +7,7 @@ from app.core.config import get_settings
 
 
 def create_database_engine(database_url: str = None):
-    """Create a SQLAlchemy engine from an explicit or configured database URL."""
+    """根据显式参数或配置的数据库地址创建 SQLAlchemy 引擎。"""
     url = database_url or get_settings().database_url
     return create_engine(url, pool_pre_ping=True, future=True)
 
@@ -17,7 +17,7 @@ SessionLocal = sessionmaker(bind=engine, autoflush=False, autocommit=False, futu
 
 
 def get_db() -> Generator[Session, None, None]:
-    """Yield a request-scoped database session and close it afterward."""
+    """提供请求级数据库会话，并在使用后关闭。"""
     db = SessionLocal()
     try:
         yield db

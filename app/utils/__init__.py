@@ -1,2 +1,2 @@
-"""Shared utility package."""
+"""通用工具包。"""
 

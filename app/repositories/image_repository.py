@@ -8,20 +8,20 @@ from app.models.image_asset import ImageAsset
 
 class ImageRepository:
     def __init__(self, db: Session) -> None:
-        """Create an image repository bound to a database session."""
+        """创建绑定到数据库会话的图片仓储。"""
         self.db = db
 
     def get_by_id(self, image_id: str) -> Optional[ImageAsset]:
-        """Return an image asset by primary key."""
+        """按主键返回图片资源。"""
         return self.db.get(ImageAsset, image_id)
 
     def get_by_sha256(self, image_sha256: str) -> Optional[ImageAsset]:
-        """Return an image asset matching a SHA256 fingerprint."""
+        """按 SHA256 指纹返回匹配的图片资源。"""
         statement = select(ImageAsset).where(ImageAsset.image_sha256 == image_sha256)
         return self.db.execute(statement).scalar_one_or_none()
 
     def create(self, image: ImageAsset) -> ImageAsset:
-        """Persist a new image asset in the current transaction."""
+        """在当前事务中持久化新的图片资源。"""
         self.db.add(image)
         self.db.flush()
         return image

@@ -12,21 +12,21 @@ class AnalysisRateLimitService:
         user_daily_limit: int = 10,
         interval_seconds: int = 10,
     ) -> None:
-        """Create an analysis rate limiter backed by Redis-like counters."""
+        """创建基于 Redis 类计数器的分析限流器。"""
         self.redis = redis_client
         self.guest_daily_limit = guest_daily_limit
         self.user_daily_limit = user_daily_limit
         self.interval_seconds = interval_seconds
 
     def check_and_consume(self, identity: str, is_guest: bool, now: datetime = None) -> None:
-        """Validate interval and daily quota, then consume one analysis attempt."""
+        """校验请求间隔和每日配额，并消耗一次分析次数。"""
         current_time = now or datetime.utcnow()
         self._check_interval(identity, current_time)
         self._consume_daily_count(identity, is_guest, current_time.date())
         self.redis.set(CacheKeys.last_analysis_at(identity), str(int(current_time.timestamp())))
 
     def _check_interval(self, identity: str, current_time: datetime) -> None:
-        """Raise when an identity submits analyses more often than allowed."""
+        """当身份提交分析过于频繁时抛出业务异常。"""
         key = CacheKeys.last_analysis_at(identity)
         last_timestamp = self.redis.get(key)
         if not last_timestamp:
@@ -37,7 +37,7 @@ class AnalysisRateLimitService:
             raise BusinessError(ErrorCode.analysis_too_frequent)
 
     def _consume_daily_count(self, identity: str, is_guest: bool, day: date) -> None:
-        """Increment daily analysis count and enforce guest/user quota."""
+        """递增每日分析次数，并执行游客/用户配额限制。"""
         limit = self.guest_daily_limit if is_guest else self.user_daily_limit
         key = CacheKeys.daily_analysis_count(identity, day)
         count = self.redis.incr(key)
@@ -50,6 +50,6 @@ class AnalysisRateLimitService:
 
     @staticmethod
     def _next_day_timestamp(day: date) -> int:
-        """Return the Unix timestamp for the start of the next day."""
+        """返回下一天零点的 Unix 时间戳。"""
         next_day = datetime.combine(day + timedelta(days=1), datetime.min.time())
         return int(next_day.timestamp())

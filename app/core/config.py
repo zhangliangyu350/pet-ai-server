@@ -21,14 +21,14 @@ class Settings:
 
 
 def _read_env(name: str, default: str) -> str:
-    """Read an environment variable while preserving the provided default."""
+    """读取环境变量，并在未设置时保留默认值。"""
     value = os.getenv(name)
     return value if value is not None else default
 
 
 @lru_cache(maxsize=1)
 def get_settings() -> Settings:
-    """Return cached application settings loaded from environment variables."""
+    """返回从环境变量加载并缓存的应用配置。"""
     return Settings(
         app_env=_read_env("APP_ENV", Settings.app_env),
         app_name=_read_env("APP_NAME", Settings.app_name),

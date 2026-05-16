@@ -1,2 +1,2 @@
-"""Core configuration, response, exception, and logging helpers."""
+"""核心配置、响应、异常和日志辅助模块。"""
 

@@ -14,13 +14,13 @@ from app.utils.image import validate_image
 
 class UploadService:
     def __init__(self, db: Session, settings: Settings = None) -> None:
-        """Create an upload service with database access and storage settings."""
+        """创建带数据库访问和存储配置的上传服务。"""
         self.db = db
         self.settings = settings or get_settings()
         self.image_repository = ImageRepository(db)
 
     def upload_image(self, content: bytes, pet_type: str = None) -> UploadImageResult:
-        """Validate, fingerprint, store, and persist an uploaded pet image."""
+        """校验、生成指纹、存储并持久化上传的宠物图片。"""
         if pet_type and pet_type not in {"cat", "dog"}:
             raise BusinessError(ErrorCode.validation_error)
 
@@ -49,7 +49,7 @@ class UploadService:
         return self._to_result(image)
 
     def _save_local_image(self, image_id: str, image_type: str, content: bytes) -> str:
-        """Write image bytes to local development storage and return a public URL."""
+        """将图片字节写入本地开发存储，并返回公开访问地址。"""
         if self.settings.upload_storage != "local":
             raise BusinessError(ErrorCode.upload_failed)
 
@@ -62,7 +62,7 @@ class UploadService:
 
     @staticmethod
     def _to_result(image: ImageAsset) -> UploadImageResult:
-        """Convert an image model into the frontend upload response shape."""
+        """将图片模型转换为前端上传响应结构。"""
         return UploadImageResult(
             image_url=image.image_url,
             image_sha256=image.image_sha256,
@@ -73,5 +73,5 @@ class UploadService:
 
     @staticmethod
     def _new_image_id() -> str:
-        """Generate an opaque image identifier for storage and database use."""
+        """生成用于存储和数据库的不透明图片 ID。"""
         return f"image_{uuid.uuid4().hex}"

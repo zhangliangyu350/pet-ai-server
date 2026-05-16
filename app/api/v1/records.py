@@ -18,7 +18,7 @@ def get_recent_record(
     current_user: User = Depends(get_optional_user),
     guest_id: str = Depends(get_guest_id),
 ):
-    """Return the most recent health record for a user or guest context."""
+    """返回用户或游客上下文中的最近健康记录。"""
     result = RecordService(db=db, redis_client=get_redis_client()).get_recent_record(
         user_id=current_user.id if current_user else None,
         guest_id=guest_id,
@@ -33,7 +33,7 @@ def get_records(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    """Return a paginated health record list for the logged-in user."""
+    """返回登录用户的健康记录分页列表。"""
     result = RecordService(db=db, redis_client=get_redis_client()).list_records(
         user_id=current_user.id,
         page=page,
@@ -48,7 +48,7 @@ def save_record(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    """Save an analysis result as a logged-in user's health record."""
+    """将分析结果保存为登录用户的健康记录。"""
     result = RecordService(db=db, redis_client=get_redis_client()).save_record(
         user_id=current_user.id,
         analysis_id=payload.analysis_id,
@@ -62,7 +62,7 @@ def delete_record(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    """Delete a logged-in user's health record by id."""
+    """按 ID 删除登录用户的健康记录。"""
     RecordService(db=db, redis_client=get_redis_client()).delete_record(
         user_id=current_user.id,
         record_id=record_id,

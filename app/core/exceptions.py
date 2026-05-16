@@ -51,7 +51,7 @@ class BusinessError(Exception):
         message: Optional[str] = None,
         status_code: int = 400,
     ) -> None:
-        """Create a business exception with contract error code and HTTP status."""
+        """创建带契约错误码和 HTTP 状态的业务异常。"""
         self.code = code
         self.message = message or DEFAULT_MESSAGES[code]
         self.status_code = status_code
@@ -59,13 +59,13 @@ class BusinessError(Exception):
 
 
 def register_exception_handlers(app: FastAPI) -> None:
-    """Register global exception handlers that preserve the public API contract."""
+    """注册保持公开 API 契约的全局异常处理器。"""
     @app.exception_handler(BusinessError)
     async def handle_business_error(
         _request: Request,
         exc: BusinessError,
     ) -> JSONResponse:
-        """Convert known business errors into structured JSON responses."""
+        """将已知业务异常转换为结构化 JSON 响应。"""
         return JSONResponse(
             status_code=exc.status_code,
             content=error_response(code=exc.code.value, message=exc.message),
@@ -76,7 +76,7 @@ def register_exception_handlers(app: FastAPI) -> None:
         _request: Request,
         _exc: RequestValidationError,
     ) -> JSONResponse:
-        """Convert FastAPI validation errors into the shared validation error code."""
+        """将 FastAPI 参数校验错误转换为统一校验错误码。"""
         return JSONResponse(
             status_code=422,
             content=error_response(
@@ -87,7 +87,7 @@ def register_exception_handlers(app: FastAPI) -> None:
 
     @app.exception_handler(Exception)
     async def handle_unexpected_error(request: Request, _exc: Exception) -> JSONResponse:
-        """Hide unexpected internal errors behind a generic server error response."""
+        """用通用服务错误响应隐藏非预期内部异常。"""
         logger.exception("Unhandled error while processing %s", request.url.path)
         return JSONResponse(
             status_code=500,

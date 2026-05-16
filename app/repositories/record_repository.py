@@ -9,11 +9,11 @@ from app.models.health_record import HealthRecord
 
 class RecordRepository:
     def __init__(self, db: Session) -> None:
-        """Create a health record repository bound to a database session."""
+        """创建绑定到数据库会话的健康记录仓储。"""
         self.db = db
 
     def get_by_id(self, record_id: str) -> Optional[HealthRecord]:
-        """Return a non-deleted health record by primary key."""
+        """按主键返回未删除的健康记录。"""
         statement = select(HealthRecord).where(
             HealthRecord.id == record_id,
             HealthRecord.deleted_at.is_(None),
@@ -21,7 +21,7 @@ class RecordRepository:
         return self.db.execute(statement).scalar_one_or_none()
 
     def get_by_user_and_analysis(self, user_id: str, analysis_id: str) -> Optional[HealthRecord]:
-        """Return an existing saved record for a user and analysis pair."""
+        """返回用户和分析组合下已存在的保存记录。"""
         statement = select(HealthRecord).where(
             HealthRecord.user_id == user_id,
             HealthRecord.analysis_id == analysis_id,
@@ -30,7 +30,7 @@ class RecordRepository:
         return self.db.execute(statement).scalar_one_or_none()
 
     def get_recent_for_user(self, user_id: str) -> Optional[HealthRecord]:
-        """Return the latest non-deleted record saved by a user."""
+        """返回用户最近保存且未删除的记录。"""
         statement = (
             select(HealthRecord)
             .where(HealthRecord.user_id == user_id, HealthRecord.deleted_at.is_(None))
@@ -45,7 +45,7 @@ class RecordRepository:
         page: int,
         page_size: int,
     ) -> tuple[list[HealthRecord], int]:
-        """Return a page of non-deleted user records and the total count."""
+        """返回用户未删除记录分页和总数。"""
         offset = (page - 1) * page_size
         base_filter = (
             HealthRecord.user_id == user_id,
@@ -64,13 +64,13 @@ class RecordRepository:
         return records, total
 
     def create(self, record: HealthRecord) -> HealthRecord:
-        """Persist a new health record in the current transaction."""
+        """在当前事务中持久化新的健康记录。"""
         self.db.add(record)
         self.db.flush()
         return record
 
     def soft_delete(self, record: HealthRecord) -> HealthRecord:
-        """Mark a health record as deleted without removing the row."""
+        """将健康记录标记为删除，但不移除数据行。"""
         record.deleted_at = datetime.utcnow()
         self.db.flush()
         return record

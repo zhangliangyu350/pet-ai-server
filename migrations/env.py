@@ -2,12 +2,15 @@ from logging.config import fileConfig
 import os
 
 from alembic import context
+from dotenv import load_dotenv
 from sqlalchemy import engine_from_config, pool
 
 from app.core.config import get_settings
 from app.models.base import Base
 
 from app.models import analysis, health_record, image_asset, user  # noqa: F401
+
+load_dotenv()
 
 config = context.config
 

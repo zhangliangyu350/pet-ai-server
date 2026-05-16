@@ -23,6 +23,7 @@ class DeepSeekAIClient:
         timeout_seconds: float = 20.0,
         max_attempts: int = 2,
     ) -> None:
+        """Create a DeepSeek-compatible AI client from explicit or environment config."""
         settings = get_settings()
         self.api_key = api_key if api_key is not None else settings.ai_api_key
         self.base_url = (base_url if base_url is not None else settings.ai_api_base_url).rstrip("/")
@@ -35,6 +36,7 @@ class DeepSeekAIClient:
         pet_type: str,
         pet_name: str = "",
     ) -> dict:
+        """Submit a pet image analysis request and return parsed raw AI JSON."""
         if not self.api_key or not self.base_url:
             raise BusinessError(ErrorCode.analysis_busy)
 
@@ -67,6 +69,7 @@ class DeepSeekAIClient:
             raise BusinessError(ErrorCode.analysis_failed) from None
 
     async def _post_with_retry(self, payload: dict, headers: dict) -> dict:
+        """Post to the AI provider with a small retry budget for transient failures."""
         last_error = None
         for attempt in range(self.max_attempts):
             try:

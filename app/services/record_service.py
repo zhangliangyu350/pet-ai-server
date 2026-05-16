@@ -17,6 +17,7 @@ from app.services.analysis_cache_service import AnalysisCacheService
 
 class RecordService:
     def __init__(self, db: Session, redis_client) -> None:
+        """Create a record service using database repositories and guest cache."""
         self.db = db
         self.redis = redis_client
         self.record_repository = RecordRepository(db)
@@ -24,6 +25,7 @@ class RecordService:
         self.analysis_cache = AnalysisCacheService(redis_client)
 
     def get_recent_record(self, user_id: str = None, guest_id: str = None) -> HealthRecordResponse:
+        """Return the latest saved or guest analysis record for the current identity."""
         if user_id:
             record = self.record_repository.get_recent_for_user(user_id)
             return self._to_response(record) if record else None
@@ -38,6 +40,7 @@ class RecordService:
         return None
 
     def list_records(self, user_id: str, page: int, page_size: int) -> RecordListResponse:
+        """Return a paginated list of saved records for a logged-in user."""
         records, total = self.record_repository.list_for_user(
             user_id=user_id,
             page=max(page, 1),
@@ -54,6 +57,7 @@ class RecordService:
         )
 
     def save_record(self, user_id: str, analysis_id: str) -> SaveRecordResult:
+        """Save an accessible analysis as a user's health record."""
         analysis = self.analysis_repository.get_by_id(analysis_id)
         if analysis is None or (analysis.user_id and analysis.user_id != user_id):
             raise BusinessError(ErrorCode.record_not_found, status_code=404)
@@ -72,6 +76,7 @@ class RecordService:
         return SaveRecordResult(id=record.id)
 
     def delete_record(self, user_id: str, record_id: str) -> None:
+        """Soft-delete a record after verifying user ownership."""
         record = self.record_repository.get_by_id(record_id)
         if record is None or record.user_id != user_id:
             raise BusinessError(ErrorCode.record_not_found, status_code=404)
@@ -80,6 +85,7 @@ class RecordService:
 
     @staticmethod
     def _to_response(record: HealthRecord) -> HealthRecordResponse:
+        """Convert a persisted health record into the frontend record shape."""
         return HealthRecordResponse(
             id=record.id,
             analysis_id=record.analysis_id,
@@ -93,6 +99,7 @@ class RecordService:
 
     @staticmethod
     def _analysis_to_record_response(analysis) -> HealthRecordResponse:
+        """Represent a guest's recent analysis using the record response shape."""
         return HealthRecordResponse(
             id=analysis.id,
             analysis_id=analysis.id,
@@ -106,5 +113,5 @@ class RecordService:
 
     @staticmethod
     def _new_record_id() -> str:
+        """Generate an opaque health record identifier."""
         return f"record_{uuid.uuid4().hex}"
-

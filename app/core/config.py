@@ -21,12 +21,14 @@ class Settings:
 
 
 def _read_env(name: str, default: str) -> str:
+    """Read an environment variable while preserving the provided default."""
     value = os.getenv(name)
     return value if value is not None else default
 
 
 @lru_cache(maxsize=1)
 def get_settings() -> Settings:
+    """Return cached application settings loaded from environment variables."""
     return Settings(
         app_env=_read_env("APP_ENV", Settings.app_env),
         app_name=_read_env("APP_NAME", Settings.app_name),
@@ -45,4 +47,3 @@ def get_settings() -> Settings:
             Settings.public_image_base_url,
         ),
     )
-

@@ -17,6 +17,7 @@ class ImageInfo:
 
 
 def validate_image(content: bytes) -> ImageInfo:
+    """Validate image bytes and return detected type, dimensions, and size."""
     if not content:
         raise BusinessError(ErrorCode.image_required)
 
@@ -34,12 +35,14 @@ def validate_image(content: bytes) -> ImageInfo:
 
 
 def _read_dimensions(content: bytes, image_type: str) -> tuple[int, int]:
+    """Dispatch dimension parsing based on the normalized image type."""
     if image_type == "png":
         return _read_png_dimensions(content)
     return _read_jpeg_dimensions(content)
 
 
 def _read_png_dimensions(content: bytes) -> tuple[int, int]:
+    """Read PNG width and height from the IHDR header."""
     if len(content) < 24 or not content.startswith(b"\x89PNG\r\n\x1a\n"):
         raise BusinessError(ErrorCode.image_type_invalid)
     width, height = struct.unpack(">II", content[16:24])
@@ -47,6 +50,7 @@ def _read_png_dimensions(content: bytes) -> tuple[int, int]:
 
 
 def _read_jpeg_dimensions(content: bytes) -> tuple[int, int]:
+    """Read JPEG width and height from the first Start Of Frame segment."""
     index = 2
     while index < len(content):
         while index < len(content) and content[index] == 0xFF:
@@ -88,4 +92,3 @@ def _read_jpeg_dimensions(content: bytes) -> tuple[int, int]:
         index += segment_length
 
     raise BusinessError(ErrorCode.image_type_invalid)
-

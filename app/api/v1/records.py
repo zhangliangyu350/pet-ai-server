@@ -18,6 +18,7 @@ def get_recent_record(
     current_user: User = Depends(get_optional_user),
     guest_id: str = Depends(get_guest_id),
 ):
+    """Return the most recent health record for a user or guest context."""
     result = RecordService(db=db, redis_client=get_redis_client()).get_recent_record(
         user_id=current_user.id if current_user else None,
         guest_id=guest_id,
@@ -32,6 +33,7 @@ def get_records(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
+    """Return a paginated health record list for the logged-in user."""
     result = RecordService(db=db, redis_client=get_redis_client()).list_records(
         user_id=current_user.id,
         page=page,
@@ -46,6 +48,7 @@ def save_record(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
+    """Save an analysis result as a logged-in user's health record."""
     result = RecordService(db=db, redis_client=get_redis_client()).save_record(
         user_id=current_user.id,
         analysis_id=payload.analysis_id,
@@ -59,9 +62,9 @@ def delete_record(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
+    """Delete a logged-in user's health record by id."""
     RecordService(db=db, redis_client=get_redis_client()).delete_record(
         user_id=current_user.id,
         record_id=record_id,
     )
     return success_response(data=None, message="删除成功")
-

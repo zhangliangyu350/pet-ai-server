@@ -13,8 +13,8 @@ router = APIRouter(prefix="/auth")
 
 @router.post("/wechat-login")
 async def wechat_login(payload: WechatLoginRequest, db: Session = Depends(get_db)):
+    """Exchange a WeChat login code for an application session token."""
     wechat_session = await WechatClient().code_to_session(payload.code)
     auth_service = AuthService(db=db, redis_client=get_redis_client())
     result = auth_service.login_by_wechat(wechat_session)
     return success_response(data=result.model_dump(by_alias=True))
-

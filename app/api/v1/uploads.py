@@ -16,6 +16,7 @@ async def upload_image(
     pet_type: str = Form(default=None, alias="petType"),
     db: Session = Depends(get_db),
 ):
+    """Accept and store a JPG or PNG pet image upload."""
     try:
         content = await file.read()
         result = UploadService(db=db, settings=get_settings()).upload_image(

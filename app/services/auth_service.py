@@ -17,12 +17,14 @@ class AuthService:
         redis_client,
         session_ttl_seconds: int = 60 * 60 * 24 * 30,
     ) -> None:
+        """Create an authentication service backed by database and Redis sessions."""
         self.db = db
         self.redis = redis_client
         self.session_ttl_seconds = session_ttl_seconds
         self.user_repository = UserRepository(db)
 
     def login_by_wechat(self, wechat_session: WechatSession) -> LoginResult:
+        """Create or update a user from WeChat identity and issue a session token."""
         user = self.user_repository.upsert_wechat_user(
             user_id=self._new_user_id(),
             openid=wechat_session.openid,
@@ -32,12 +34,14 @@ class AuthService:
         return LoginResult(token=token, user=self._to_user_response(user))
 
     def get_session(self, token: str) -> AuthSession:
+        """Load an authenticated session payload by bearer token."""
         raw_value = self.redis.get(CacheKeys.session(token))
         if not raw_value:
             return None
         return AuthSession.model_validate(json.loads(raw_value))
 
     def _create_session_token(self, user: User) -> str:
+        """Generate and persist a session token for a user."""
         token = secrets.token_urlsafe(32)
         payload = {
             "user_id": user.id,
@@ -52,6 +56,7 @@ class AuthService:
 
     @staticmethod
     def _to_user_response(user: User) -> UserResponse:
+        """Convert a user model into the public login response shape."""
         return UserResponse(
             id=user.id,
             nickname=user.nickname,
@@ -61,5 +66,5 @@ class AuthService:
 
     @staticmethod
     def _new_user_id() -> str:
+        """Generate an opaque user identifier."""
         return f"user_{uuid.uuid4().hex}"
-

@@ -19,10 +19,10 @@ async def submit_analysis(
     current_user: User = Depends(get_optional_user),
     guest_id: str = Depends(get_guest_id),
 ):
+    """Submit an uploaded image for AI health analysis."""
     result = await AnalysisService(db=db, redis_client=get_redis_client()).submit_analysis(
         payload=payload,
         user_id=current_user.id if current_user else None,
         guest_id=guest_id,
     )
     return success_response(data=result.model_dump(by_alias=True))
-

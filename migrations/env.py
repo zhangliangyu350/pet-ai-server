@@ -18,10 +18,12 @@ target_metadata = Base.metadata
 
 
 def get_url() -> str:
+    """Return the database URL used by Alembic migration runs."""
     return os.getenv("DATABASE_URL") or get_settings().database_url
 
 
 def run_migrations_offline() -> None:
+    """Run Alembic migrations without opening a database connection."""
     context.configure(
         url=get_url(),
         target_metadata=target_metadata,
@@ -34,6 +36,7 @@ def run_migrations_offline() -> None:
 
 
 def run_migrations_online() -> None:
+    """Run Alembic migrations using a live database connection."""
     configuration = config.get_section(config.config_ini_section, {})
     configuration["sqlalchemy.url"] = get_url()
     connectable = engine_from_config(
@@ -53,4 +56,3 @@ if context.is_offline_mode():
     run_migrations_offline()
 else:
     run_migrations_online()
-

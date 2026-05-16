@@ -21,6 +21,7 @@ class AnalysisService:
         redis_client,
         ai_client: DeepSeekAIClient = None,
     ) -> None:
+        """Create an analysis workflow service with cache, quota, and AI dependencies."""
         self.db = db
         self.redis = redis_client
         self.ai_client = ai_client or DeepSeekAIClient()
@@ -34,6 +35,7 @@ class AnalysisService:
         user_id: str = None,
         guest_id: str = None,
     ) -> AnalysisResult:
+        """Run the analysis flow: quota, cache lookup, AI call, persistence, and response."""
         identity, is_guest = self._resolve_identity(user_id=user_id, guest_id=guest_id)
         self.rate_limit_service.check_and_consume(identity=identity, is_guest=is_guest)
 
@@ -90,6 +92,7 @@ class AnalysisService:
 
     @staticmethod
     def _resolve_identity(user_id: str = None, guest_id: str = None) -> tuple[str, bool]:
+        """Resolve the current user or guest into a rate-limit identity."""
         if user_id:
             return user_identity(user_id), False
         if guest_id:
@@ -98,6 +101,7 @@ class AnalysisService:
 
     @staticmethod
     def _to_result(analysis: Analysis) -> AnalysisResult:
+        """Convert an analysis model into the public analysis response shape."""
         created_at = analysis.created_at or datetime.utcnow()
         return AnalysisResult(
             id=analysis.id,
@@ -117,4 +121,5 @@ class AnalysisService:
 
     @staticmethod
     def _new_analysis_id() -> str:
+        """Generate an opaque analysis identifier."""
         return f"analysis_{uuid.uuid4().hex}"

@@ -18,12 +18,14 @@ class WechatClient:
         app_secret: str = None,
         timeout_seconds: float = 5.0,
     ) -> None:
+        """Create a WeChat code2session client from explicit or environment config."""
         settings = get_settings()
         self.app_id = app_id if app_id is not None else settings.wechat_app_id
         self.app_secret = app_secret if app_secret is not None else settings.wechat_app_secret
         self.timeout_seconds = timeout_seconds
 
     async def code_to_session(self, code: str) -> WechatSession:
+        """Exchange a wx.login code for a validated WeChat session."""
         if not self.app_id or not self.app_secret:
             logger.warning("Wechat login attempted without app credentials configured")
             raise BusinessError(ErrorCode.login_failed)
@@ -57,4 +59,3 @@ class WechatClient:
             session_key=payload.get("session_key", ""),
             unionid=payload.get("unionid", ""),
         )
-

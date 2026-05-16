@@ -2,6 +2,10 @@ from dataclasses import dataclass
 from functools import lru_cache
 import os
 
+from dotenv import load_dotenv
+
+load_dotenv()
+
 
 @dataclass(frozen=True)
 class Settings:

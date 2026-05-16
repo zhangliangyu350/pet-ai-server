@@ -22,12 +22,25 @@ class Settings:
     upload_storage: str = "local"
     upload_local_dir: str = "./storage/uploads"
     public_image_base_url: str = "http://localhost:8000/static/uploads"
+    minio_endpoint: str = "127.0.0.1:9000"
+    minio_access_key: str = ""
+    minio_secret_key: str = ""
+    minio_bucket: str = "pet-ai-images"
+    minio_secure: bool = False
 
 
 def _read_env(name: str, default: str) -> str:
     """读取环境变量，并在未设置时保留默认值。"""
     value = os.getenv(name)
     return value if value is not None else default
+
+
+def _read_bool_env(name: str, default: bool) -> bool:
+    """读取布尔环境变量，并支持常见 true/false 字符串。"""
+    value = os.getenv(name)
+    if value is None:
+        return default
+    return value.lower() in {"1", "true", "yes", "on"}
 
 
 @lru_cache(maxsize=1)
@@ -50,4 +63,9 @@ def get_settings() -> Settings:
             "PUBLIC_IMAGE_BASE_URL",
             Settings.public_image_base_url,
         ),
+        minio_endpoint=_read_env("MINIO_ENDPOINT", Settings.minio_endpoint),
+        minio_access_key=_read_env("MINIO_ACCESS_KEY", Settings.minio_access_key),
+        minio_secret_key=_read_env("MINIO_SECRET_KEY", Settings.minio_secret_key),
+        minio_bucket=_read_env("MINIO_BUCKET", Settings.minio_bucket),
+        minio_secure=_read_bool_env("MINIO_SECURE", Settings.minio_secure),
     )

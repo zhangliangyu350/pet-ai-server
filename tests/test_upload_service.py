@@ -49,3 +49,21 @@ def test_upload_service_reuses_existing_sha256(tmp_path: Path):
     assert first.image_url == second.image_url
     assert len(list(tmp_path.iterdir())) == 1
 
+
+def test_upload_service_uses_injected_storage_service():
+    class FakeStorageService:
+        def __init__(self) -> None:
+            self.calls = []
+
+        def save_image(self, image_id: str, image_type: str, content: bytes) -> str:
+            self.calls.append((image_id, image_type, content))
+            return f"https://cdn.example.com/{image_id}.{image_type}"
+
+    db = build_session()
+    storage_service = FakeStorageService()
+    service = UploadService(db=db, storage_service=storage_service)
+
+    result = service.upload_image(PNG_1X1)
+
+    assert result.image_url.startswith("https://cdn.example.com/image_")
+    assert storage_service.calls[0][1] == "png"

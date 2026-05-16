@@ -46,14 +46,22 @@ class DeepSeekAIClient:
                 {"role": "system", "content": AI_ANALYSIS_PROMPT},
                 {
                     "role": "user",
-                    "content": json.dumps(
+                    "content": [
                         {
-                            "imageUrl": image_url,
-                            "petType": pet_type,
-                            "petName": pet_name,
+                            "type": "text",
+                            "text": json.dumps(
+                                {
+                                    "petType": pet_type,
+                                    "petName": pet_name,
+                                },
+                                ensure_ascii=False,
+                            ),
                         },
-                        ensure_ascii=False,
-                    ),
+                        {
+                            "type": "image_url",
+                            "image_url": {"url": image_url},
+                        },
+                    ],
                 },
             ],
             "response_format": {"type": "json_object"},

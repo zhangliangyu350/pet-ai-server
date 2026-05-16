@@ -113,6 +113,6 @@ curl -X DELETE http://127.0.0.1:8000/api/v1/records/record_001 \
 
 - MySQL
 - Redis
-- MinIO，或将 `UPLOAD_STORAGE=local` 用于本地临时调试
+- 本地图片上传目录，默认 `./storage/uploads`
 - 微信小程序登录配置
-- AI 服务配置
+- 豆包视觉模型服务配置

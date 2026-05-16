@@ -306,17 +306,11 @@ DATABASE_URL=mysql+pymysql://user:password@localhost:3306/pet_ai
 REDIS_URL=redis://localhost:6379/0
 WECHAT_APP_ID=
 WECHAT_APP_SECRET=
-AI_PROVIDER=deepseek
+AI_PROVIDER=doubao
 AI_API_KEY=
 AI_API_BASE_URL=
-UPLOAD_STORAGE=local
 UPLOAD_LOCAL_DIR=./storage/uploads
 PUBLIC_IMAGE_BASE_URL=http://localhost:8000/static/uploads
-MINIO_ENDPOINT=127.0.0.1:9000
-MINIO_ACCESS_KEY=
-MINIO_SECRET_KEY=
-MINIO_BUCKET=pet-ai-images
-MINIO_SECURE=false
 ```
 
 注意：

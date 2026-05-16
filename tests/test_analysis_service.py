@@ -2,10 +2,12 @@ import pytest
 
 from app.core.exceptions import BusinessError, ErrorCode
 from app.models.analysis import Analysis
+from app.models.image_asset import ImageAsset
 from app.schemas.analysis import SubmitAnalysisRequest
 from app.services.analysis_service import AnalysisService
 from tests.db_helpers import build_sqlite_session
 from tests.fakes import FakeRedis
+from tests.image_fixtures import PNG_1X1
 
 
 class FakeAIClient:
@@ -21,28 +23,62 @@ class FakeAIClient:
         self.should_fail = should_fail
         self.calls = 0
 
-    async def analyze_poop_image(self, image_url: str, pet_type: str, pet_name: str = ""):
+    async def analyze_poop_image(
+        self,
+        image_content: bytes,
+        image_type: str,
+        pet_type: str,
+        pet_name: str = "",
+    ):
         self.calls += 1
         if self.should_fail:
             raise BusinessError(ErrorCode.analysis_failed)
+        assert image_content == PNG_1X1
+        assert image_type == "png"
         return self.raw_result
 
 
 def build_payload(sha256: str = "sha256_001") -> SubmitAnalysisRequest:
     return SubmitAnalysisRequest(
-        imageUrl="https://example.com/image.jpg",
+        imageUrl="http://localhost/static/uploads/image_001.png",
         imageSha256=sha256,
         petType="dog",
         petName="狗狗",
     )
 
 
+class FakeStorageService:
+    def read_image(self, image_url: str):
+        assert image_url == "http://localhost/static/uploads/image_001.png"
+        return PNG_1X1, "png"
+
+
+def add_uploaded_image(db, sha256: str = "sha256_001") -> None:
+    db.add(
+        ImageAsset(
+            id=f"image_{sha256}",
+            image_url="http://localhost/static/uploads/image_001.png",
+            image_sha256=sha256,
+            width=1,
+            height=1,
+            size=len(PNG_1X1),
+        )
+    )
+    db.commit()
+
+
 @pytest.mark.anyio
 async def test_submit_analysis_calls_ai_and_saves_guest_recent():
     db = build_sqlite_session()
+    add_uploaded_image(db)
     redis = FakeRedis()
     ai_client = FakeAIClient()
-    service = AnalysisService(db=db, redis_client=redis, ai_client=ai_client)
+    service = AnalysisService(
+        db=db,
+        redis_client=redis,
+        ai_client=ai_client,
+        storage_service=FakeStorageService(),
+    )
 
     result = await service.submit_analysis(payload=build_payload(), guest_id="guest_001")
 
@@ -55,9 +91,15 @@ async def test_submit_analysis_calls_ai_and_saves_guest_recent():
 @pytest.mark.anyio
 async def test_submit_analysis_uses_sha256_cache():
     db = build_sqlite_session()
+    add_uploaded_image(db)
     redis = FakeRedis()
     ai_client = FakeAIClient()
-    service = AnalysisService(db=db, redis_client=redis, ai_client=ai_client)
+    service = AnalysisService(
+        db=db,
+        redis_client=redis,
+        ai_client=ai_client,
+        storage_service=FakeStorageService(),
+    )
 
     first = await service.submit_analysis(payload=build_payload(), guest_id="guest_001")
     second = await service.submit_analysis(payload=build_payload(), guest_id="guest_002")
@@ -69,8 +111,15 @@ async def test_submit_analysis_uses_sha256_cache():
 @pytest.mark.anyio
 async def test_submit_analysis_blocks_too_frequent():
     db = build_sqlite_session()
+    add_uploaded_image(db, "sha256_001")
+    add_uploaded_image(db, "sha256_002")
     redis = FakeRedis()
-    service = AnalysisService(db=db, redis_client=redis, ai_client=FakeAIClient())
+    service = AnalysisService(
+        db=db,
+        redis_client=redis,
+        ai_client=FakeAIClient(),
+        storage_service=FakeStorageService(),
+    )
 
     await service.submit_analysis(payload=build_payload("sha256_001"), guest_id="guest_001")
 
@@ -84,7 +133,12 @@ async def test_submit_analysis_blocks_too_frequent():
 async def test_submit_analysis_fails_without_identity():
     db = build_sqlite_session()
     redis = FakeRedis()
-    service = AnalysisService(db=db, redis_client=redis, ai_client=FakeAIClient())
+    service = AnalysisService(
+        db=db,
+        redis_client=redis,
+        ai_client=FakeAIClient(),
+        storage_service=FakeStorageService(),
+    )
 
     with pytest.raises(BusinessError) as exc_info:
         await service.submit_analysis(payload=build_payload())
@@ -95,8 +149,14 @@ async def test_submit_analysis_fails_without_identity():
 @pytest.mark.anyio
 async def test_submit_analysis_maps_ai_failure():
     db = build_sqlite_session()
+    add_uploaded_image(db)
     redis = FakeRedis()
-    service = AnalysisService(db=db, redis_client=redis, ai_client=FakeAIClient(should_fail=True))
+    service = AnalysisService(
+        db=db,
+        redis_client=redis,
+        ai_client=FakeAIClient(should_fail=True),
+        storage_service=FakeStorageService(),
+    )
 
     with pytest.raises(BusinessError) as exc_info:
         await service.submit_analysis(payload=build_payload(), guest_id="guest_001")
@@ -111,7 +171,7 @@ async def test_submit_analysis_reads_existing_db_cache():
     db.add(
         Analysis(
             id="analysis_existing",
-            image_url="https://example.com/image.jpg",
+            image_url="http://localhost/static/uploads/image_001.png",
             image_sha256="sha256_existing",
             pet_type="dog",
             pet_name="狗狗",
@@ -127,10 +187,14 @@ async def test_submit_analysis_reads_existing_db_cache():
     )
     db.commit()
     ai_client = FakeAIClient()
-    service = AnalysisService(db=db, redis_client=redis, ai_client=ai_client)
+    service = AnalysisService(
+        db=db,
+        redis_client=redis,
+        ai_client=ai_client,
+        storage_service=FakeStorageService(),
+    )
 
     result = await service.submit_analysis(payload=build_payload("sha256_existing"), guest_id="guest_001")
 
     assert result.id == "analysis_existing"
     assert ai_client.calls == 0
-

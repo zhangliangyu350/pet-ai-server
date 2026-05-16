@@ -6,12 +6,14 @@ from sqlalchemy.orm import Session
 from app.core.exceptions import BusinessError, ErrorCode
 from app.models.analysis import Analysis
 from app.repositories.analysis_repository import AnalysisRepository
+from app.repositories.image_repository import ImageRepository
 from app.schemas.analysis import AnalysisResult, SubmitAnalysisRequest
-from app.services.ai_service import DeepSeekAIClient
+from app.services.ai_service import DoubaoAIClient
 from app.services.analysis_cache_service import AnalysisCacheService
 from app.services.analysis_sanitizer import sanitize_ai_result
 from app.services.cache_keys import guest_identity, user_identity
 from app.services.rate_limit_service import AnalysisRateLimitService
+from app.services.storage_service import StorageService
 
 
 class AnalysisService:
@@ -19,13 +21,16 @@ class AnalysisService:
         self,
         db: Session,
         redis_client,
-        ai_client: DeepSeekAIClient = None,
+        ai_client: DoubaoAIClient = None,
+        storage_service: StorageService = None,
     ) -> None:
         """创建包含缓存、配额和 AI 依赖的分析流程服务。"""
         self.db = db
         self.redis = redis_client
-        self.ai_client = ai_client or DeepSeekAIClient()
+        self.ai_client = ai_client or DoubaoAIClient()
+        self.storage_service = storage_service or StorageService()
         self.analysis_repository = AnalysisRepository(db)
+        self.image_repository = ImageRepository(db)
         self.analysis_cache = AnalysisCacheService(redis_client)
         self.rate_limit_service = AnalysisRateLimitService(redis_client)
 
@@ -56,8 +61,13 @@ class AnalysisService:
                 self.analysis_cache.set_guest_recent_analysis_id(guest_id, result.id)
             return result
 
-        raw_result = await self.ai_client.analyze_poop_image(
+        image_content, image_type = self._read_uploaded_image(
             image_url=payload.image_url,
+            image_sha256=payload.image_sha256,
+        )
+        raw_result = await self.ai_client.analyze_poop_image(
+            image_content=image_content,
+            image_type=image_type,
             pet_type=payload.pet_type,
             pet_name=payload.pet_name,
         )
@@ -98,6 +108,13 @@ class AnalysisService:
         if guest_id:
             return guest_identity(guest_id), True
         raise BusinessError(ErrorCode.auth_required, status_code=401)
+
+    def _read_uploaded_image(self, image_url: str, image_sha256: str) -> tuple[bytes, str]:
+        """确认图片来自上传记录，并读取本地图片内容供 AI base64 编码。"""
+        image = self.image_repository.get_by_sha256(image_sha256)
+        if image is None or image.image_url != image_url:
+            raise BusinessError(ErrorCode.image_required)
+        return self.storage_service.read_image(image.image_url)
 
     @staticmethod
     def _to_result(analysis: Analysis) -> AnalysisResult:

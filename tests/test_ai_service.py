@@ -2,7 +2,8 @@ import json
 
 import pytest
 
-from app.services.ai_service import DeepSeekAIClient
+from app.services.ai_service import DoubaoAIClient
+from tests.image_fixtures import PNG_1X1
 
 
 class MockResponse:
@@ -49,24 +50,24 @@ class MockAsyncClient:
 
 
 @pytest.mark.anyio
-async def test_deepseek_client_sends_image_url_content(monkeypatch):
+async def test_doubao_client_sends_base64_image_content(monkeypatch):
     monkeypatch.setattr("httpx.AsyncClient", MockAsyncClient)
-    client = DeepSeekAIClient(
+    client = DoubaoAIClient(
         api_key="api_key",
-        base_url="https://api.deepseek.com",
+        base_url="https://ark.cn-beijing.volces.com/api/v3",
         max_attempts=1,
     )
 
     await client.analyze_poop_image(
-        image_url="https://cdn.example.com/pet-ai-images/images/image_001.png",
+        image_content=PNG_1X1,
+        image_type="png",
         pet_type="dog",
         pet_name="狗狗",
     )
 
+    assert MockAsyncClient.captured_payload["model"] == "doubao-vision-pro"
     user_message = MockAsyncClient.captured_payload["messages"][1]
     assert user_message["content"][0]["type"] == "text"
-    assert user_message["content"][1] == {
-        "type": "image_url",
-        "image_url": {"url": "https://cdn.example.com/pet-ai-images/images/image_001.png"},
-    }
-
+    image_url = user_message["content"][1]["image_url"]["url"]
+    assert user_message["content"][1]["type"] == "image_url"
+    assert image_url.startswith("data:image/png;base64,")

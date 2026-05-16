@@ -1,3 +1,4 @@
+import base64
 import json
 import logging
 
@@ -15,7 +16,7 @@ AI_ANALYSIS_PROMPT = """
 """
 
 
-class DeepSeekAIClient:
+class DoubaoAIClient:
     def __init__(
         self,
         api_key: str = None,
@@ -23,7 +24,7 @@ class DeepSeekAIClient:
         timeout_seconds: float = 20.0,
         max_attempts: int = 2,
     ) -> None:
-        """根据显式参数或环境配置创建兼容 DeepSeek 的 AI 客户端。"""
+        """根据显式参数或环境配置创建兼容豆包视觉模型的 AI 客户端。"""
         settings = get_settings()
         self.api_key = api_key if api_key is not None else settings.ai_api_key
         self.base_url = (base_url if base_url is not None else settings.ai_api_base_url).rstrip("/")
@@ -32,16 +33,18 @@ class DeepSeekAIClient:
 
     async def analyze_poop_image(
         self,
-        image_url: str,
+        image_content: bytes,
+        image_type: str,
         pet_type: str,
         pet_name: str = "",
     ) -> dict:
-        """提交宠物图片分析请求，并返回解析后的 AI 原始 JSON。"""
+        """以 base64 图片提交宠物分析请求，并返回解析后的 AI 原始 JSON。"""
         if not self.api_key or not self.base_url:
             raise BusinessError(ErrorCode.analysis_busy)
 
+        image_data_url = self._to_image_data_url(image_content=image_content, image_type=image_type)
         payload = {
-            "model": "deepseek-v4-flash",
+            "model": "doubao-vision-pro",
             "messages": [
                 {"role": "system", "content": AI_ANALYSIS_PROMPT},
                 {
@@ -59,7 +62,7 @@ class DeepSeekAIClient:
                         },
                         {
                             "type": "image_url",
-                            "image_url": {"url": image_url},
+                            "image_url": {"url": image_data_url},
                         },
                     ],
                 },
@@ -75,6 +78,13 @@ class DeepSeekAIClient:
             return json.loads(content)
         except (KeyError, IndexError, TypeError, json.JSONDecodeError):
             raise BusinessError(ErrorCode.analysis_failed) from None
+
+    @staticmethod
+    def _to_image_data_url(image_content: bytes, image_type: str) -> str:
+        """将图片字节编码为视觉模型可读取的 base64 data URL。"""
+        mime_type = "image/png" if image_type == "png" else "image/jpeg"
+        encoded_image = base64.b64encode(image_content).decode("ascii")
+        return f"data:{mime_type};base64,{encoded_image}"
 
     async def _post_with_retry(self, payload: dict, headers: dict) -> dict:
         """向 AI 服务商发起请求，并对临时失败进行少量重试。"""

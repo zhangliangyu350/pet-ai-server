@@ -307,6 +307,7 @@ REDIS_URL=redis://localhost:6379/0
 WECHAT_APP_ID=
 WECHAT_APP_SECRET=
 AI_PROVIDER=doubao
+AI_MODEL=
 AI_API_KEY=
 AI_API_BASE_URL=
 UPLOAD_LOCAL_DIR=./storage/uploads
@@ -317,6 +318,7 @@ PUBLIC_IMAGE_BASE_URL=http://localhost:8000/static/uploads
 
 - `.env` 不允许提交。
 - 生产环境密钥必须由部署平台注入。
+- 火山方舟兼容接口的 `AI_MODEL` 填控制台创建的推理接入点 ID，通常形如 `ep-xxxx` 或 `ep-m-xxxx`，不要填底层模型名称。
 
 ---
 

@@ -13,6 +13,14 @@ AI_ANALYSIS_PROMPT = """
 你是宠物健康参考助手。请根据宠物便便图片信息返回 JSON。
 必须避免诊断、治疗、处方、药物建议等医疗高风险表达。
 仅输出 JSON，字段包含 score、riskLevel、summary、observationAdvice、dietAdvice、needVet。
+字段要求：
+- score 为 1 到 100 的整数。
+- riskLevel 只能是 low、medium、high、observe 之一，不要输出中文风险枚举。
+- summary、dietAdvice 为中文字符串。
+- summary 不超过 40 个中文字符。
+- observationAdvice 为中文字符串数组，至少 1 条，最多 3 条，每条不超过 30 个中文字符。
+- dietAdvice 不超过 60 个中文字符。
+- needVet 为布尔值。
 """
 
 
@@ -21,6 +29,7 @@ class DoubaoAIClient:
         self,
         api_key: str = None,
         base_url: str = None,
+        model: str = None,
         timeout_seconds: float = 20.0,
         max_attempts: int = 2,
     ) -> None:
@@ -28,6 +37,7 @@ class DoubaoAIClient:
         settings = get_settings()
         self.api_key = api_key if api_key is not None else settings.ai_api_key
         self.base_url = (base_url if base_url is not None else settings.ai_api_base_url).rstrip("/")
+        self.model = model if model is not None else settings.ai_model
         self.timeout_seconds = timeout_seconds
         self.max_attempts = max(max_attempts, 1)
 
@@ -44,7 +54,7 @@ class DoubaoAIClient:
 
         image_data_url = self._to_image_data_url(image_content=image_content, image_type=image_type)
         payload = {
-            "model": "doubao-vision-pro",
+            "model": self.model,
             "messages": [
                 {"role": "system", "content": AI_ANALYSIS_PROMPT},
                 {

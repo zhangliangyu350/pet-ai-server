@@ -17,6 +17,7 @@ class Settings:
     wechat_app_id: str = ""
     wechat_app_secret: str = ""
     ai_provider: str = "doubao"
+    ai_model: str = ""
     ai_api_key: str = ""
     ai_api_base_url: str = ""
     upload_local_dir: str = "./storage/uploads"
@@ -41,6 +42,7 @@ def get_settings() -> Settings:
         wechat_app_id=_read_env("WECHAT_APP_ID", Settings.wechat_app_id),
         wechat_app_secret=_read_env("WECHAT_APP_SECRET", Settings.wechat_app_secret),
         ai_provider=_read_env("AI_PROVIDER", Settings.ai_provider),
+        ai_model=_read_env("AI_MODEL", Settings.ai_model),
         ai_api_key=_read_env("AI_API_KEY", Settings.ai_api_key),
         ai_api_base_url=_read_env("AI_API_BASE_URL", Settings.ai_api_base_url),
         upload_local_dir=_read_env("UPLOAD_LOCAL_DIR", Settings.upload_local_dir),

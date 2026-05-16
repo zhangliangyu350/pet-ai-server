@@ -27,7 +27,7 @@
 开发环境示例：
 
 ```txt
-https://dev-api.example.com
+http://127.0.0.1:8000
 ```
 
 生产环境示例：
@@ -36,7 +36,7 @@ https://dev-api.example.com
 https://api.example.com
 ```
 
-真实域名由后端部署环境和前端 `config` 统一配置。
+本地联调默认使用 `http://127.0.0.1:8000`。真实开发、测试、生产域名由后端部署环境和前端 `config` 统一配置。
 
 ### 3.2 Content Type
 
